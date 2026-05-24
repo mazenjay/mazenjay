@@ -2,9 +2,11 @@ name: Generate Snake Animation
 
 on:
   schedule:
-    # Runs at 00:00 UTC every day
     - cron: "0 0 * * *"
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   generate:
@@ -12,18 +14,21 @@ jobs:
     timeout-minutes: 10
 
     steps:
-      - name: Generate github-contribution-grid-snake.svg
-        uses: Platane/snk/svg-only@v3
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Generate snake SVGs
+        uses: Platane/snk@v3
         with:
           github_user_name: ${{ github.repository_owner }}
           outputs: |
             dist/github-contribution-grid-snake.svg
             dist/github-contribution-grid-snake-dark.svg?palette=github-dark
 
-      - name: Push to output branch
-        uses: crazy-max/ghaction-github-pages@v4
+      - name: Deploy to output branch
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          target_branch: output
-          build_dir: dist
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+          publish_branch: output
+          commit_message: "Update snake animation [skip ci]"
